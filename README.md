@@ -18,8 +18,8 @@ Stripe TAMs sit at the intersection of technical depth and user trust. This port
 | --- | ------------------------------------------------------ | ----------------------------- | ------ |
 | 01  | Payment decline investigation                          | Payments, decline codes       | ✅     |
 | 02  | Webhook event verification & failure recovery          | Webhooks, event objects       | ✅     |
-| 03  | Dispute evidence submission automation                 | Disputes, Evidence API        |        |
-| 04  | Custom Radar rules for fraud prevention                | Radar, risk evaluation        |        |
+| 03  | Dispute evidence submission automation                 | Disputes, Evidence API        | ✅     |
+| 04  | Custom Radar rules for fraud prevention                | Radar, risk evaluation        | ✅     |
 | 05  | Connect platform — connected account onboarding        | Connect, requirements         |        |
 | 06  | Subscription invoice failure & smart retry             | Billing, invoice lifecycle    |        |
 | 07  | Payout delay root-cause investigation                  | Payouts, balance transactions |        |
@@ -121,3 +121,23 @@ Velora received 12 chargebacks in one week, all with reason code `product_not_re
 > The most important thing right now is the deadline — Visa gives you 20 days from the dispute date, Mastercard up to 45. Don't wait. I've prepared a script that pulls all your open disputes, shows the deadlines, and submits the evidence in one run. I can share it with your engineering team today.
 >
 > One more thing: if you see the same customer name or email appearing across multiple disputes, flag it in your submission — card networks treat repeat disputers differently and it strengthens your case."
+
+---
+
+### Ticket 04 — Custom Radar Rules for Fraud Prevention
+
+**Account:** SportDeal GmbH (Frankfurt) · **Priority:** High
+
+SportDeal's fraud rate hit 1.8% — more than double Visa's 0.75% threshold — driven by stolen cards being used for high-value sports equipment orders. They had no custom Radar rules configured. We designed a five-rule strategy covering risk score thresholds, IP/card country mismatch, new customer high-value orders, and prepaid card blocking. We also built a script to extract Radar risk scores from recent PaymentIntents, and documented the block vs. 3DS trade-off so the merchant understands why a layered approach protects revenue better than hard blocking alone.
+
+![Radar Output](ticket-04-radar-fraud-rules/assets/radar-output.png)
+
+**How a TAM would respond to Markus:**
+
+> "Hi Markus, a 1.8% fraud rate is serious — Visa's monitoring threshold is 0.75%, so you're well above it. The good news is your pattern is very clear: high-value orders, new customers, mismatched billing and shipping. Radar can target this precisely.
+>
+> I've put together five custom rules for your account. The most impactful ones are: blocking payments with a Radar risk score above 75, blocking orders over €200 where the IP country doesn't match the card country, and flagging new customers spending over €300 for manual review rather than blocking them outright.
+>
+> One thing I want to flag: don't block everything aggressively. A rule that blocks too broadly will cost you legitimate revenue — and that loss is invisible in your dashboard. For medium-risk signals, I'd recommend requesting 3D Secure instead of blocking. It adds an authentication step that shifts fraud liability to the card issuer, so even if the payment goes through, you're protected from the chargeback.
+>
+> I can walk you through entering these rules in your Radar dashboard today. It takes about 10 minutes and you'll see the impact in your fraud rate within the week."
