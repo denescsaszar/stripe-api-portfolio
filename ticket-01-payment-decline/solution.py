@@ -4,13 +4,14 @@ Diagnose a spike in failed payments by analysing decline codes
 from recent PaymentIntents.
 """
 
+import os
 import stripe
 from collections import Counter
-from datetime import datetime, timezone
+from dotenv import load_dotenv
 
-# Replace with your Stripe test secret key
-# Never commit a real key — use environment variables in production
-stripe.api_key = "sk_test_..."
+load_dotenv()
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 
 ISSUER_DECLINES = {
     "insufficient_funds": "Customer's card has insufficient funds.",
