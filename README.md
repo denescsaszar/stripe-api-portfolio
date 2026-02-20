@@ -37,6 +37,10 @@ Stripe TAMs sit at the intersection of technical depth and user trust. This port
 | 19  | Balance reconciliation — payouts vs. internal ledger   | Payouts, reconciliation       |
 | 20  | Local development with Stripe CLI & webhook forwarding | Stripe CLI, dev tooling       |
 
+| #   | Scenario                      | Stripe Surface          | Status |
+| --- | ----------------------------- | ----------------------- | ------ |
+| 01  | Payment decline investigation | Payments, decline codes | ✅     |
+
 ---
 
 ## Stack
@@ -61,3 +65,11 @@ Payments · PaymentIntents · Radar · Connect · Billing · Webhooks · Dispute
 ---
 
 _Each ticket is self-contained. Start anywhere._
+
+---
+
+## Progress
+
+### Ticket 01 — Payment Decline Investigation
+
+![Diagnostic Output](ticket-01-payment-decline/assets/diagnostic-output.png)
