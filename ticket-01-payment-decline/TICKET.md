@@ -51,3 +51,9 @@ A diagnostic summary showing:
 - Total attempts vs. failures
 - Breakdown by decline code
 - Clear recommendation the merchant can act on today
+
+---
+
+## Output
+
+![Diagnostic Output](assets/diagnostic-output.png)
