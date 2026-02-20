@@ -70,9 +70,17 @@ _Each ticket is self-contained. Start anywhere._
 
 **Account:** TechGear GmbH (Berlin) · **Priority:** High
 
-A merchant reported a 30% spike in failed payments during peak season with no integration changes on their side. Using the Stripe API, we pulled recent PaymentIntents, grouped failures by decline code, and identified the dominant root cause — distinguishing between issuer-side declines (bank blocking the charge) and Stripe/Radar blocks (fraud rules triggering). The output gives the TAM a clear, shareable diagnostic they can send directly to the merchant with a recommended next step.
+A merchant reported a 30% spike in failed payments during peak season with no integration changes on their side. Using the Stripe API, we pulled recent PaymentIntents, grouped failures by decline code, and identified the dominant root cause — distinguishing between issuer-side declines (bank blocking the charge) and Stripe/Radar blocks (fraud rules triggering).
 
 ![Diagnostic Output](ticket-01-payment-decline/assets/diagnostic-output.png)
+
+**How a TAM would respond to Anna:**
+
+> "Hi Anna, we've pulled your recent PaymentIntents and identified the pattern. The dominant failure reason is `insufficient_funds` — this is an issuer-side decline, meaning your customers' banks are blocking the charge, not Stripe. There is no integration issue on your side.
+>
+> For your peak season, I'd recommend three things: first, make sure your checkout shows a clear retry prompt so customers can try a different card. Second, consider offering SEPA Direct Debit as an alternative — it's widely used in DE/AT/CH and bypasses card issuer limits entirely. Third, if you're not already using Stripe's card update emails, enable them so expired or declined cards get updated automatically.
+>
+> None of these require integration changes — all three can be enabled in your Dashboard today. Want me to walk you through it?"
 
 ---
 
@@ -80,6 +88,16 @@ A merchant reported a 30% spike in failed payments during peak season with no in
 
 **Account:** Flowbox SaaS (Hamburg) · **Priority:** High
 
-A merchant suspected fake webhook events were being sent to their endpoint — orders were marked paid with no matching charges. They had no signature verification in place. We built a secure Flask webhook receiver using `stripe.Webhook.construct_event()` to cryptographically verify every incoming request, rejecting anything unsigned with HTTP 400. We also queried the Stripe Events API to surface the 11 missed events from the previous 72 hours (visible in the output), demonstrating how to recover from server downtime without losing critical payment data.
+A merchant suspected fake webhook events were being sent to their endpoint — orders were marked paid with no matching charges. They had no signature verification in place. We built a secure Flask webhook receiver using `stripe.Webhook.construct_event()` to cryptographically verify every incoming request, rejecting anything unsigned with HTTP 400. We also queried the Stripe Events API to surface the 11 missed events from the previous 72 hours, demonstrating how to recover from server downtime without losing critical payment data.
 
 ![Webhook Output](ticket-02-webhook-debugging/assets/webhook-output.png)
+
+**How a TAM would respond to Lars:**
+
+> "Hi Lars, we've identified two separate issues.
+>
+> First, the fake events: your endpoint was accepting requests from anyone because webhook signatures weren't being verified. Stripe signs every event with a secret key — without checking that signature, any attacker can POST a fake `payment_intent.succeeded` to your server and trigger order fulfilment for free. The fix is one function call: `stripe.Webhook.construct_event()`. Anything that fails verification gets rejected with HTTP 400 before it touches your database.
+>
+> Second, the missing events: Stripe retries failed webhooks for up to 72 hours and stores all events for 30 days. We queried the Events API and found the 11 events from that window. You can replay any specific event with `stripe events resend <event_id>` to reprocess orders that were missed.
+>
+> I've prepared a working implementation you can drop into your stack today. Want to walk through it together on a call?"
