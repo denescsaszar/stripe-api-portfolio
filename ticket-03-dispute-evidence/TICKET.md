@@ -54,3 +54,9 @@
 - A script that lists all open disputes with deadlines
 - A working evidence submission using the Stripe API
 - Clear guidance on what evidence wins `product_not_received` cases
+
+---
+
+## Output
+
+![Dispute Output](assets/dispute-output.png)
