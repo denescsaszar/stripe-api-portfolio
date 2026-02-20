@@ -54,3 +54,9 @@
 - A secure Flask webhook receiver that rejects unverified requests
 - A script to fetch and replay missed events
 - Clear explanation of why unsigned webhooks are a critical security gap
+
+---
+
+## Output
+
+![Webhook Output](assets/webhook-output.png)
