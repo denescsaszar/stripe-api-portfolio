@@ -56,3 +56,9 @@
 - A script that lists all connected accounts with their status
 - Clear identification of what requirements are blocking each account
 - A working onboarding link generator for accounts that need to complete setup
+
+---
+
+## Output
+
+![Onboarding Output](assets/onboarding-output.png)
