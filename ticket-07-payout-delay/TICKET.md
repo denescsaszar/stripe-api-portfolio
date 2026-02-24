@@ -59,3 +59,15 @@ A diagnostic report showing:
 - Bank account verification status
 - Timeline of when payouts stopped and why
 - Recommended next steps for the merchant
+
+---
+
+## Output
+
+### Account & Payout Status
+
+![Payout Status](assets/payout-status.png)
+
+### Root-Cause Analysis
+
+![Root-Cause Analysis](assets/root-cause-analysis.png)
