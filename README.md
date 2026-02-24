@@ -184,3 +184,29 @@ Audible Books sells monthly audiobook subscriptions (€9.99/month) and recently
 > Want me to walk your team through the webhook implementation? It's about 50 lines of code and will transform your billing health."
 
 ---
+
+---
+
+### Ticket 07 — Payout Delay Root-Cause Investigation
+
+**Account:** SwiftShop GmbH (Munich) · **Priority:** High
+
+SwiftShop is a mid-market e-commerce platform processing €15,000-20,000/day. Their daily payouts suddenly stopped 3 days ago — €47,230 is now sitting in pending balance with no explanation. They have no visibility into why. We built a diagnostic script that systematically checks four critical areas: account restrictions (is payouts_enabled?), payout history (when did failures start?), balance breakdown (available vs. pending), and bank account verification status. The script identifies whether the block is Stripe-side (account holds, requirements), bank-side (verification issue), or system-side (pending disputes).
+
+![Payout Status](ticket-07-payout-delay/assets/payout-status.png)
+
+![Root-Cause Analysis](ticket-07-payout-delay/assets/root-cause-analysis.png)
+
+**How a TAM would respond to Thomas (Finance Lead):**
+
+> "Hi Thomas, payout delays are stressful, but they're always fixable. We've investigated your account and identified the root cause. Here's what I found.
+>
+> I pulled your last 10 payout attempts and found they're all failing with the same error code since Monday at 3 PM. This tells us it's not a one-time issue — something fundamental changed on Monday.
+>
+> I checked five things: (1) Are payouts enabled on your account? (2) Are you missing identity or business verification? (3) Is your bank account properly verified? (4) Is your available balance positive, or are all funds pending? (5) Do you have pending disputes or chargebacks that might be holding funds?
+>
+> Based on what I'm seeing, the issue is [insert the critical issue from the analysis]. Here's exactly what to do: [insert the action]. This should unblock payouts within 1-2 hours of you completing it.
+>
+> In the meantime, your €47,230 is safe — it's not lost, just pending. Once we fix this, it'll move out automatically.
+>
+> Want me to walk you through the fix right now?"
