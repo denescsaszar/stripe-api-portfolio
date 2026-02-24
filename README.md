@@ -21,7 +21,7 @@ Stripe TAMs sit at the intersection of technical depth and user trust. This port
 | 03  | Dispute evidence submission automation                 | Disputes, Evidence API        | ✅     |
 | 04  | Custom Radar rules for fraud prevention                | Radar, risk evaluation        | ✅     |
 | 05  | Connect platform — connected account onboarding        | Connect, requirements         | ✅     |
-| 06  | Subscription invoice failure & smart retry             | Billing, invoice lifecycle    |        |
+| 06  | Subscription invoice failure & smart retry             | Billing, invoice lifecycle    | ✅     |
 | 07  | Payout delay root-cause investigation                  | Payouts, balance transactions |        |
 | 08  | SCA / 3D Secure for PSD2 compliance                    | PaymentIntents, 3DS           |        |
 | 09  | Multi-currency payment setup (EUR, GBP, PLN)           | Payments, currency handling   |        |
@@ -158,5 +158,29 @@ Markethub is a marketplace connecting service providers (cleaners, plumbers, ele
 > I've prepared a script that shows you exactly which requirements each of your 50 accounts is missing right now. Once you send them the onboarding links, this will drop to zero. The whole flow takes about 2 days in practice because some sellers take time to gather documents.
 >
 > Want me to walk your engineering team through the webhook implementation on a call this week?"
+
+---
+
+### Ticket 06 — Subscription Invoice Failure & Smart Retry
+
+**Account:** Audible Books GmbH (Vienna) · **Priority:** High
+
+Audible Books sells monthly audiobook subscriptions (€9.99/month) and recently experienced recurring billing failures. Customers didn't realize their subscriptions had lapsed — they just noticed missing access to new books. The merchant had no visibility into why invoices failed and no intelligent retry logic. Failed invoices sat in `open` state indefinitely. We built a script that fetches failed invoices, classifies each failure as TEMPORARY (safe to retry), PERMANENT (needs customer action), or ACTION_REQUIRED (3D Secure), and shows exactly which customers need email notifications vs. which can be retried automatically. We also documented the webhook-driven automation strategy using `invoice.payment_failed` and `invoice.payment_action_required` events.
+
+![Diagnostic Breakdown](ticket-06-subscription-failure/assets/diagnostic-breakdown.png)
+
+![Recommendations](ticket-06-subscription-failure/assets/recommendations.png)
+
+**How a TAM would respond to Maria (Head of Billing):**
+
+> "Hi Maria, subscription billing failures are totally normal — about 2-3% of invoices fail on first attempt, mostly from temporary card issues. The problem isn't that they're failing; it's that you have no strategy to recover them.
+>
+> Here's what's happening: when an invoice fails, Stripe records the error in `last_finalization_error`. We pulled your recent invoices and classified each failure. Some are temporary (`try_again`, `processing_error`) — these are safe to retry immediately with exponential backoff. Others are permanent (`card_declined`, `insufficient_funds`, `expired_card`) — these need customer action, not retries.
+>
+> The current situation: you're manually checking these, which is both slow and error-prone. The production approach is to listen to the `invoice.payment_failed` webhook. When it fires, your code checks the error code: if it's temporary, retry after 1 second. If it's permanent, send the customer an email asking them to update their payment method. If it needs 3D Secure authentication, email them a link to complete it.
+>
+> The script I've prepared shows you exactly which of your current failed invoices are retryable vs. need customer action. Once you implement the webhook-driven retry, your recovery rate will jump from ~0% to ~60-80% — that's 60-80% of failed invoices that eventually succeed without customer intervention.
+>
+> Want me to walk your team through the webhook implementation? It's about 50 lines of code and will transform your billing health."
 
 ---
