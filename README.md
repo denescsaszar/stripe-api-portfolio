@@ -20,7 +20,7 @@ Stripe TAMs sit at the intersection of technical depth and user trust. This port
 | 02  | Webhook event verification & failure recovery          | Webhooks, event objects       | ✅     |
 | 03  | Dispute evidence submission automation                 | Disputes, Evidence API        | ✅     |
 | 04  | Custom Radar rules for fraud prevention                | Radar, risk evaluation        | ✅     |
-| 05  | Connect platform — connected account onboarding        | Connect, requirements         |        |
+| 05  | Connect platform — connected account onboarding        | Connect, requirements         | ✅     |
 | 06  | Subscription invoice failure & smart retry             | Billing, invoice lifecycle    |        |
 | 07  | Payout delay root-cause investigation                  | Payouts, balance transactions |        |
 | 08  | SCA / 3D Secure for PSD2 compliance                    | PaymentIntents, 3DS           |        |
@@ -51,6 +51,7 @@ Each ticket folder contains:
 
 - `TICKET.md` — the scenario, written as a real merchant-reported issue
 - `solution.py` — diagnosis and working resolution in Python
+- `assets/` — screenshots and supporting files
 
 ---
 
@@ -90,8 +91,6 @@ A merchant reported a 30% spike in failed payments during peak season with no in
 
 A merchant suspected fake webhook events were being sent to their endpoint — orders were marked paid with no matching charges. They had no signature verification in place. We built a secure Flask webhook receiver using `stripe.Webhook.construct_event()` to cryptographically verify every incoming request, rejecting anything unsigned with HTTP 400. We also queried the Stripe Events API to surface the 11 missed events from the previous 72 hours, demonstrating how to recover from server downtime without losing critical payment data.
 
-![Webhook Output](ticket-02-webhook-debugging/assets/webhook-output.png)
-
 **How a TAM would respond to Lars:**
 
 > "Hi Lars, we've identified two separate issues.
@@ -109,8 +108,6 @@ A merchant suspected fake webhook events were being sent to their endpoint — o
 **Account:** Velora Fashion (Munich) · **Priority:** High
 
 Velora received 12 chargebacks in one week, all with reason code `product_not_received`. They had DHL tracking confirming delivery for every order but had never submitted dispute evidence through Stripe before. We built a script that queries all open disputes via the API, checks deadlines, and submits evidence programmatically using `stripe.Dispute.modify()` — including tracking number, carrier, shipping date, customer email, and a written narrative for the card network. The script saved the evidence as a draft first so the merchant can review in the Dashboard before final submission.
-
-![Dispute Output](ticket-03-dispute-evidence/assets/dispute-output.png)
 
 **How a TAM would respond to Sophie:**
 
@@ -130,8 +127,6 @@ Velora received 12 chargebacks in one week, all with reason code `product_not_re
 
 SportDeal's fraud rate hit 1.8% — more than double Visa's 0.75% threshold — driven by stolen cards being used for high-value sports equipment orders. They had no custom Radar rules configured. We designed a five-rule strategy covering risk score thresholds, IP/card country mismatch, new customer high-value orders, and prepaid card blocking. We also built a script to extract Radar risk scores from recent PaymentIntents, and documented the block vs. 3DS trade-off so the merchant understands why a layered approach protects revenue better than hard blocking alone.
 
-![Radar Output](ticket-04-radar-fraud-rules/assets/radar-output.png)
-
 **How a TAM would respond to Markus:**
 
 > "Hi Markus, a 1.8% fraud rate is serious — Visa's monitoring threshold is 0.75%, so you're well above it. The good news is your pattern is very clear: high-value orders, new customers, mismatched billing and shipping. Radar can target this precisely.
@@ -141,3 +136,27 @@ SportDeal's fraud rate hit 1.8% — more than double Visa's 0.75% threshold — 
 > One thing I want to flag: don't block everything aggressively. A rule that blocks too broadly will cost you legitimate revenue — and that loss is invisible in your dashboard. For medium-risk signals, I'd recommend requesting 3D Secure instead of blocking. It adds an authentication step that shifts fraud liability to the card issuer, so even if the payment goes through, you're protected from the chargeback.
 >
 > I can walk you through entering these rules in your Radar dashboard today. It takes about 10 minutes and you'll see the impact in your fraud rate within the week."
+
+---
+
+### Ticket 05 — Connect Platform Account Onboarding
+
+**Account:** Markethub GmbH (Berlin) · **Priority:** High
+
+Markethub is a marketplace connecting service providers (cleaners, plumbers, electricians) with customers across Germany and Poland. They onboarded 50 connected accounts in their first week but 35 of them are stuck in a `restricted` state — `charges_enabled` and `payouts_enabled` are both false. The merchant doesn't know what information Stripe needs from each seller. We built a script that lists all connected accounts, extracts the specific missing requirements from the API (e.g., business website, phone number, identity documents), generates AccountLink onboarding URLs, and explains the webhook-driven activation flow so Markethub can programmatically monitor when each seller becomes fully operational.
+
+![Onboarding Output](ticket-05-connect-onboarding/assets/onboarding-output.png)
+
+**How a TAM would respond to Anna (Markethub CEO):**
+
+> "Hi Anna, this is actually very normal for a new marketplace — most connected accounts start in `restricted` while Stripe verifies identity and banking details. The good news: it's solvable in hours, not days.
+>
+> Here's what's happening: each of your sellers needs to complete Stripe's KYC form (Know Your Customer). Stripe hosts that form for you — you don't need to build it. We pull all your accounts from the API, extract exactly which fields each seller is missing (identity documents, bank account, business URL, etc.), generate a unique onboarding link for each one, and send it to them. The link expires in 24 hours, so they need to act quickly.
+>
+> The key architectural decision: **don't poll the Account object on a schedule**. That's brittle. Instead, listen to the `account.updated` webhook. Every time a seller completes Stripe's form or adds missing information, Stripe fires that event immediately. Your code checks: if `charges_enabled == true` AND `payouts_enabled == true`, activate their storefront. If requirements are still due, email them what's missing.
+>
+> I've prepared a script that shows you exactly which requirements each of your 50 accounts is missing right now. Once you send them the onboarding links, this will drop to zero. The whole flow takes about 2 days in practice because some sellers take time to gather documents.
+>
+> Want me to walk your engineering team through the webhook implementation on a call this week?"
+
+---
