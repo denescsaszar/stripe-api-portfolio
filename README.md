@@ -14,28 +14,29 @@ Stripe TAMs sit at the intersection of technical depth and user trust. This port
 
 ## Coverage
 
-| #   | Scenario                                               | Stripe Surface                | Status |
-| --- | ------------------------------------------------------ | ----------------------------- | ------ |
-| 01  | Payment decline investigation                          | Payments, decline codes       | ✅     |
-| 02  | Webhook event verification & failure recovery          | Webhooks, event objects       | ✅     |
-| 03  | Dispute evidence submission automation                 | Disputes, Evidence API        | ✅     |
-| 04  | Custom Radar rules for fraud prevention                | Radar, risk evaluation        | ✅     |
-| 05  | Connect platform — connected account onboarding        | Connect, requirements         | ✅     |
-| 06  | Subscription invoice failure & smart retry             | Billing, invoice lifecycle    | ✅     |
-| 07  | Payout delay root-cause investigation                  | Payouts, balance transactions |        |
-| 08  | SCA / 3D Secure for PSD2 compliance                    | PaymentIntents, 3DS           |        |
-| 09  | Multi-currency payment setup (EUR, GBP, PLN)           | Payments, currency handling   |        |
-| 10  | Sigma SQL — decline pattern analysis                   | Stripe Sigma, SQL             |        |
-| 11  | Idempotency keys — preventing duplicate charges        | Payments, API reliability     |        |
-| 12  | Bulk refund processing for a product recall            | Refunds, automation           |        |
-| 13  | Payment Links for a non-technical merchant             | Payment Links, no-code        |        |
-| 14  | API rate limit handling with exponential backoff       | API, error handling           |        |
-| 15  | Webhook signature verification                         | Security, webhooks            |        |
-| 16  | Billing portal — customer self-service setup           | Customer Portal, Billing      |        |
-| 17  | Radar rule testing & simulation                        | Radar, test mode              |        |
-| 18  | Charge metadata — organising custom fields at scale    | Metadata, reporting           |        |
-| 19  | Balance reconciliation — payouts vs. internal ledger   | Payouts, reconciliation       |        |
-| 20  | Local development with Stripe CLI & webhook forwarding | Stripe CLI, dev tooling       |        |
+| #   | Scenario                                        | Stripe Surface                | Status |
+| --- | ----------------------------------------------- | ----------------------------- | ------ |
+| 01  | Payment decline investigation                   | Payments, decline codes       | ✅     |
+| 02  | Webhook event verification & failure recovery   | Webhooks, event objects       | ✅     |
+| 03  | Dispute evidence submission automation          | Disputes, Evidence API        | ✅     |
+| 04  | Custom Radar rules for fraud prevention         | Radar, risk evaluation        | ✅     |
+| 05  | Connect platform — connected account onboarding | Connect, requirements         | ✅     |
+| 06  | Subscription invoice failure & smart retry      | Billing, invoice lifecycle    | ✅     |
+| 07  | Payout delay root-cause investigation           | Payouts, balance transactions | ✅     |
+| 08  | SCA / 3D Secure for PSD2 compliance             | PaymentIntents, 3DS           | ✅     |
+| 09  | Multi-currency payment setup (EUR, GBP, PLN)    | Payments, currency handling   | ✅     |
+
+| 10 | Sigma SQL — decline pattern analysis | Stripe Sigma, SQL | |
+| 11 | Idempotency keys — preventing duplicate charges | Payments, API reliability | |
+| 12 | Bulk refund processing for a product recall | Refunds, automation | |
+| 13 | Payment Links for a non-technical merchant | Payment Links, no-code | |
+| 14 | API rate limit handling with exponential backoff | API, error handling | |
+| 15 | Webhook signature verification | Security, webhooks | |
+| 16 | Billing portal — customer self-service setup | Customer Portal, Billing | |
+| 17 | Radar rule testing & simulation | Radar, test mode | |
+| 18 | Charge metadata — organising custom fields at scale | Metadata, reporting | |
+| 19 | Balance reconciliation — payouts vs. internal ledger | Payouts, reconciliation | |
+| 20 | Local development with Stripe CLI & webhook forwarding | Stripe CLI, dev tooling | |
 
 ---
 
@@ -236,3 +237,23 @@ TechnoShop is a consumer electronics e-commerce platform serving EU-wide custome
 > I've prepared a working implementation with test flows for both successful 3DS and failed authentication. Your team can test against Stripe's test cards and go live within a week. The whole integration is about 100 lines of code.
 >
 > Want to schedule a working session with your team to walk through it?"
+
+---
+
+## Ticket 09: Multi-Currency Payment Setup
+
+**Account:** GlobeShop Ltd (London, UK) · **Priority:** High
+
+GlobeShop is an e-commerce platform expanding to EU, US, and Asia. They currently only accept GBP and USD but need multi-currency support to maximize conversion rates in each market. We built currency detection based on customer location, multi-currency PaymentIntent creation with automatic exchange rates, and balance management across 5 currencies (GBP, USD, EUR, JPY, AUD). The solution demonstrates Stripe's fee optimization (lower for EUR pairs, higher for volatile JPY), settlement strategy consolidating all currencies to GBP, and regional compliance (PSD2 for EU customers).
+
+![Multi-currency Charges Demo](ticket-09-multi-currency/assets/ticket-09-charges-demo.png)
+
+![Exchange Rates & Fees](ticket-09-multi-currency/assets/ticket-09-exchange-rates.png)
+
+![Balance & Settlement](ticket-09-multi-currency/assets/ticket-09-balance-settlement.png)
+
+![TAM Summary](ticket-09-multi-currency/assets/ticket-09-summary.png)
+
+**How a TAM would respond to GlobeShop:**
+
+> "Your expansion strategy is exactly why Stripe supports 135+ currencies. Here's how we'll make this seamless: First, we detect customer location and charge in their local currency — this alone improves conversion rates by 10-20% vs. fixed-currency. Stripe handles the exchange rates automatically (mid-market +0.5-2%, competitive vs. traditional processors at 2-3%). For settlement, we consolidate all currencies to GBP weekly, so your bank reconciliation stays simple. The real win: PSD2 compliance is automatic for EU customers — no extra work needed. You charge in EUR, we handle the Strong Customer Authentication. By end of month, you'll see balances broken down by currency, and you can adjust your strategy based on decline rates per region."
