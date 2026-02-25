@@ -287,3 +287,25 @@ PayFlow Analytics is a B2B SaaS platform serving financial institutions. Their p
 ### TAM Reference: TAM_BIBLE.md
 
 A comprehensive reference guide covering Stripe fundamentals, webhook architecture, PaymentIntents flow, subscriptions lifecycle, payouts and reconciliation, disputes and chargebacks, Connect platform patterns, and Radar risk evaluation. Updated as new scenarios are completed — use this alongside each ticket for deeper context on the underlying Stripe mechanics.
+
+---
+
+### Ticket 11 — Idempotency Keys: Preventing Duplicate Charges
+
+**Account:** TravelBook (Amsterdam) — B2B SaaS platform for travel agencies  
+**Problem:** Network timeouts during peak booking season caused 3 duplicate charges (€2,400 + €1,850 + €3,100) in one week. No idempotency keys in use — simple try/except retry logic created new PaymentIntents on every attempt.
+
+**TAM Response:**
+
+> "Lotte, I've built a complete idempotency strategy for your booking engine. The key insight: your retry logic was using a new UUID on every attempt — so Stripe treated each retry as a brand new payment. I've implemented composite idempotency keys generated from `agency_id + booking_id + action`, meaning the same booking always produces the same key, even across server restarts. I demonstrated this live — 3 API calls with the same key returned the exact same PaymentIntent, zero duplicates. I also showed what happens without keys: 3 calls = 3 charges = €9,300 instead of €3,100. Additionally, I've included exponential backoff with jitter (1s → 2s → 4s) to handle network degradation gracefully, and Stripe's key collision detection will catch any accidental parameter changes on retry. Implementation time for your team: about 2 hours."
+
+**Key Stripe concepts:** Idempotency keys (24-hour window), composite key generation, key collision detection, PaymentIntent duplicate prevention, exponential backoff with jitter, retry-safe API patterns
+
+**Screenshots:**
+
+|                                                                                       |                                                                                       |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| ![Idempotency Demo](ticket-11-idempotency-keys/assets/ticket-11-idempotency-demo.png) | ![Retry Simulation](ticket-11-idempotency-keys/assets/ticket-11-retry-simulation.png) |
+| _Key strategies & safe payment creation_                                              | _Retry simulation — same PI returned 3x_                                              |
+| ![Key Collision](ticket-11-idempotency-keys/assets/ticket-11-key-collision.png)       | ![Audit Trail](ticket-11-idempotency-keys/assets/ticket-11-audit-trail.png)           |
+| _Collision detection on parameter mismatch_                                           | _With vs. without comparison & recommendations_                                       |
