@@ -257,3 +257,33 @@ GlobeShop is an e-commerce platform expanding to EU, US, and Asia. They currentl
 **How a TAM would respond to GlobeShop:**
 
 > "Your expansion strategy is exactly why Stripe supports 135+ currencies. Here's how we'll make this seamless: First, we detect customer location and charge in their local currency — this alone improves conversion rates by 10-20% vs. fixed-currency. Stripe handles the exchange rates automatically (mid-market +0.5-2%, competitive vs. traditional processors at 2-3%). For settlement, we consolidate all currencies to GBP weekly, so your bank reconciliation stays simple. The real win: PSD2 compliance is automatic for EU customers — no extra work needed. You charge in EUR, we handle the Strong Customer Authentication. By end of month, you'll see balances broken down by currency, and you can adjust your strategy based on decline rates per region."
+
+---
+
+### Ticket 10 — Sigma SQL — Decline Pattern Analysis
+
+**Account:** PayFlow Analytics (Berlin) · **Priority:** High
+
+PayFlow Analytics is a B2B SaaS platform serving financial institutions. Their payment decline rate suddenly jumped from 1.5% to 3.2% — a significant revenue impact — with no obvious integration changes. They have Stripe Sigma access but no analytical discipline. We built comprehensive decline pattern analysis using Sigma SQL queries, grouping failures by reason code, geography, card brand, and amount range. The analysis revealed: 47% issuer blocks (insufficient funds), 24% fraud blocks, and 8% network errors. Geographic breakdown showed Poland at 63% insufficient funds, pointing to regional bank restrictions. We documented tactical recommendations: update checkout messaging, implement 3D Secure for high-risk transactions, add retry logic for temporary failures, and optimize for Polish market regulations.
+
+![Decline Breakdown](ticket-10-sigma-sql/assets/ticket-10-decline-breakdown.png)
+
+![Geographic Analysis](ticket-10-sigma-sql/assets/ticket-10-geographic-analysis.png)
+
+**How a TAM would respond to Marcus (Head of Operations):**
+
+> "Hi Marcus, a spike from 1.5% to 3.2% is exactly the kind of pattern Sigma exists to solve. I've pulled your decline data for the last 30 days and found a clear story.
+>
+> The root cause: 47% of your declines are `insufficient_funds` — that's an issuer-side block, meaning your customers' banks are rejecting the charge, not fraud. Geographically, Poland is the epicenter: 63% of Polish transactions fail with insufficient_funds. This isn't you — it's a regional market condition.
+>
+> For the 24% that are fraud blocks, those come from Radar rule hits or card issuer risk assessment. And the 8% network errors are transient — safe to retry.
+>
+> Here's what to do immediately: (1) Update your checkout to show 'Your bank blocked this' instead of generic 'Payment failed' — it stops customers from retrying the same card. (2) Add a 3D Secure flow for high-value orders (>€500) — it shifts liability and often converts customers the first declined card would have lost. (3) For Poland specifically, partner with a local acquirer or enable SEPA if possible — it bypasses the card issuer entirely.
+>
+> I've prepared a SQL query you can run in Sigma yourself anytime to track this going forward. You'll see the impact of these changes within the week."
+
+---
+
+### TAM Reference: TAM_BIBLE.md
+
+A comprehensive reference guide covering Stripe fundamentals, webhook architecture, PaymentIntents flow, subscriptions lifecycle, payouts and reconciliation, disputes and chargebacks, Connect platform patterns, and Radar risk evaluation. Updated as new scenarios are completed — use this alongside each ticket for deeper context on the underlying Stripe mechanics.
