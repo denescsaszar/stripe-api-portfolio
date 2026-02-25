@@ -210,3 +210,29 @@ SwiftShop is a mid-market e-commerce platform processing €15,000-20,000/day. T
 > In the meantime, your €47,230 is safe — it's not lost, just pending. Once we fix this, it'll move out automatically.
 >
 > Want me to walk you through the fix right now?"
+
+---
+
+### Ticket 08 — SCA / 3D Secure for PSD2 Compliance
+
+**Account:** TechnoShop GmbH (Berlin) · **Priority:** Critical
+TechnoShop is a consumer electronics e-commerce platform serving EU-wide customers. Their bank issued a compliance notice: PSD2 regulations require Strong Customer Authentication (SCA) / 3D Secure for all card payments in the EU. They have 3 weeks to implement or face payment blocks. Their current integration uses the legacy Charges API with no 3DS support. We built a comprehensive guide showing: what PSD2/SCA means in plain English, how Stripe handles 3DS automatically via PaymentIntents, test 3DS flows (both successful and failed authentication), and the webhook-driven architecture needed to handle `requires_action` status. We also documented exemptions (low-value transactions, recurring MIT, TRA) so they understand when 3DS can be skipped.
+![PSD2 Compliance Guide - Part 1](ticket-08-sca-3ds/assets/psd2-guide-part1.png)
+![PSD2 Compliance Guide - Part 2](ticket-08-sca-3ds/assets/psd2-guide-part2.png)
+![PSD2 Compliance Guide - Part 3](ticket-08-sca-3ds/assets/psd2-guide-part3.png)
+![PSD2 Compliance Guide - Part 4](ticket-08-sca-3ds/assets/psd2-guide-part4.png)
+![PSD2 Compliance Guide - Part 5](ticket-08-sca-3ds/assets/psd2-guide-part5.png)
+
+**How a TAM would respond to Jens (Tech Lead):**
+
+> "Hi Jens, PSD2 sounds scary but Stripe handles it almost entirely for you. Let me break down what's actually required.
+>
+> PSD2 is an EU regulation that says: for online card payments where both the issuer and acquirer are in the EU/EEA, the customer must authenticate their identity — typically via 3D Secure. Stripe implements this automatically using PaymentIntents.
+>
+> Here's what you need to do: (1) Make sure you're using PaymentIntents, not the legacy Charges API. (2) Your frontend needs to handle the `requires_action` status — when it appears, you show the customer a 3DS challenge iframe. (3) Listen to the `payment_intent.payment_action_required` and `payment_intent.succeeded` webhooks so you know when authentication is complete.
+>
+> The good news: Stripe detects which transactions need 3DS automatically. You don't hardcode it. For low-value transactions (under €30), recurring charges after the initial authentication, and some other scenarios, the card issuer can exempt you from 3DS entirely — Stripe requests these exemptions automatically, the issuer decides.
+>
+> I've prepared a working implementation with test flows for both successful 3DS and failed authentication. Your team can test against Stripe's test cards and go live within a week. The whole integration is about 100 lines of code.
+>
+> Want to schedule a working session with your team to walk through it?"
