@@ -284,12 +284,6 @@ PayFlow Analytics is a B2B SaaS platform serving financial institutions. Their p
 
 ---
 
-### TAM Reference: TAM_BIBLE.md
-
-A comprehensive reference guide covering Stripe fundamentals, webhook architecture, PaymentIntents flow, subscriptions lifecycle, payouts and reconciliation, disputes and chargebacks, Connect platform patterns, and Radar risk evaluation. Updated as new scenarios are completed — use this alongside each ticket for deeper context on the underlying Stripe mechanics.
-
----
-
 ### Ticket 11 — Idempotency Keys: Preventing Duplicate Charges
 
 **Account:** TravelBook (Amsterdam) — B2B SaaS platform for travel agencies  
@@ -310,3 +304,30 @@ A comprehensive reference guide covering Stripe fundamentals, webhook architectu
 | ![Key Collision](ticket-11-idempotency-keys/assets/ticket-11-key-collision.png)       | ![Audit Trail](ticket-11-idempotency-keys/assets/ticket-11-audit-trail.png)           |
 | _Collision detection on parameter mismatch_                                           | _With vs. without comparison & recommendations_                                       |
 
+---
+
+---
+
+### Ticket 12 — Bulk Refund Processing for a Product Recall
+
+**Account:** NordBrew (Copenhagen) — Specialty coffee equipment, EU-wide sales  
+**Problem:** Safety defect discovered in flagship NordBrew Pro 3000 espresso machine. 147 units sold at €349 each in the last 60 days need full refunds within 48 hours before the public recall notice. Manual Dashboard refunds are too slow.
+
+**TAM Response:**
+
+> "Erik, I've built a complete bulk refund pipeline for your Pro 3000 recall. Here's what we did: first, we searched all PaymentIntents from the last 60 days using metadata filtering to isolate the 147 Pro 3000 purchases. Then we ran eligibility checks — some payments were already partially refunded from warranty claims, so we calculated the remaining refundable amount for each. Before touching any money, I ran a dry-run preview showing exactly which payments would be refunded and for how much — your legal team can review this before execution. The actual refund processing uses idempotency keys (one per payment) so even if we hit network issues mid-batch, no customer gets refunded twice. Each refund is tagged with metadata including the recall reference number and timestamp for your compliance audit trail. The final compliance report shows: total payments found, refunds processed, amounts, any that were skipped (already refunded) or failed. Your legal team gets a complete paper trail, and all 147 customers are refunded in minutes instead of hours."
+
+**Key Stripe concepts:** Refund API (full & partial), PaymentIntent metadata search, refund idempotency, dry-run preview pattern, charge.amount_refunded tracking, compliance audit trails, bulk API operations with error handling
+
+**Screenshots:**
+
+|                                                                                     |                                                                              |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| ![Payment Discovery](ticket-12-bulk-refunds/assets/ticket-12-payment-discovery.png) | ![Dry Run](ticket-12-bulk-refunds/assets/ticket-12-dry-run.png)              |
+| _Searching NordBrew Pro 3000 purchases & eligibility check_                         | _Dry-run preview — no money moves yet_                                       |
+| ![Bulk Execution](ticket-12-bulk-refunds/assets/ticket-12-bulk-execution.png)       | ![Compliance](ticket-12-bulk-refunds/assets/ticket-12-compliance-report.png) |
+| _Bulk refund processing with error handling_                                        | _Full audit trail for legal documentation_                                   |
+
+### TAM Reference: TAM_BIBLE.md
+
+A comprehensive reference guide covering Stripe fundamentals, webhook architecture, PaymentIntents flow, subscriptions lifecycle, payouts and reconciliation, disputes and chargebacks, Connect platform patterns, and Radar risk evaluation. Updated as new scenarios are completed — use this alongside each ticket for deeper context on the underlying Stripe mechanics.
