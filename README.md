@@ -309,3 +309,4 @@ A comprehensive reference guide covering Stripe fundamentals, webhook architectu
 | _Key strategies & safe payment creation_                                              | _Retry simulation — same PI returned 3x_                                              |
 | ![Key Collision](ticket-11-idempotency-keys/assets/ticket-11-key-collision.png)       | ![Audit Trail](ticket-11-idempotency-keys/assets/ticket-11-audit-trail.png)           |
 | _Collision detection on parameter mismatch_                                           | _With vs. without comparison & recommendations_                                       |
+
